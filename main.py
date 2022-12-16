@@ -6,7 +6,6 @@ from keras import Sequential
 import pathlib
 
 if __name__ == '__main__':
-
     dataset_url = "https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz"
     data_dir = tf.keras.utils.get_file('flower_photos', origin=dataset_url, untar=True)
     data_dir = pathlib.Path(data_dir)
@@ -43,7 +42,22 @@ if __name__ == '__main__':
     num_classes = len(class_names)
 
     #  Here data preparation has ended
-
+    #model z najwyzszym dotad accuracy z dropoutem
+    """"
+    model = Sequential([
+        layers.Rescaling(1. / 255, input_shape=(img_height, img_width, 3)),
+        layers.Conv2D(16, 3, padding='same', activation='relu'),
+        layers.MaxPooling2D(),
+        layers.Conv2D(32, 3, padding='same', activation='relu'),
+        layers.MaxPooling2D(),
+        layers.Conv2D(64, 3, padding='same', activation='relu'),
+        layers.MaxPooling2D(),
+        layers.Dropout(.2, input_shape=(2,)),
+        layers.Flatten(),
+        layers.Dense(128, activation='relu'),
+        layers.Dense(num_classes)
+    ])
+    """
     model = Sequential([
         layers.Rescaling(1. / 255, input_shape=(img_height, img_width, 3)),
         layers.Conv2D(16, 3, padding='same', activation='relu'),
