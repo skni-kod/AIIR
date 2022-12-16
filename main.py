@@ -4,8 +4,10 @@ import tensorflow as tf
 from keras import layers
 from keras import Sequential
 import pathlib
+import time
 
 if __name__ == '__main__':
+    dataprepstart_t = time.time()
     dataset_url = "https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz"
     data_dir = tf.keras.utils.get_file('flower_photos', origin=dataset_url, untar=True)
     data_dir = pathlib.Path(data_dir)
@@ -40,9 +42,9 @@ if __name__ == '__main__':
     image_batch, labels_batch = next(iter(normalized_ds))
 
     num_classes = len(class_names)
-
+    dataprepend_t = time.time()
     #  Here data preparation has ended
-
+    lrntst = time.time()
     model = Sequential([
         layers.Rescaling(1. / 255, input_shape=(img_height, img_width, 3)),
         layers.Conv2D(16, 3, padding='same', activation='relu'),
@@ -68,9 +70,12 @@ if __name__ == '__main__':
         validation_data=val_ds,
         epochs=epochs
     )
-
+    lrntend = time.time()
     #  Here model creation has ended
-
+    dataprep_time = dataprepend_t - dataprepstart_t
+    learn_time = lrntend - lrntst
+    print("Data prep time:", time.strftime("%H:%M:%S", time.gmtime(dataprep_time)))
+    print("Learning time:", time.strftime("%H:%M:%S", time.gmtime(learn_time)))
     acc = history.history['accuracy']
     val_acc = history.history['val_accuracy']
 
@@ -85,10 +90,16 @@ if __name__ == '__main__':
     plt.plot(epochs_range, val_acc, label='Validation Accuracy')
     plt.legend(loc='lower right')
     plt.title('Training and Validation Accuracy')
+    plt.xlabel('epochs')
+    plt.ylabel('accuracy')
 
     plt.subplot(1, 2, 2)
     plt.plot(epochs_range, loss, label='Training Loss')
     plt.plot(epochs_range, val_loss, label='Validation Loss')
     plt.legend(loc='upper right')
     plt.title('Training and Validation Loss')
+    plt.xlabel('epochs')
+    plt.ylabel('loss')
     plt.show()
+
+
