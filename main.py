@@ -7,7 +7,7 @@ import pathlib
 
 if __name__ == '__main__':
 
-    path= "awijfwufja"
+    path = "C:/Users/Lenovo/Downloads/flower_photos.tgz" #the path where the dataset is located
     data_dir = tf.keras.utils.get_file('flower_photos', origin=path, untar=True)
     data_dir = pathlib.Path(data_dir)
 
