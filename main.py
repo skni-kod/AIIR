@@ -6,6 +6,29 @@ from keras import layers
 from keras import Sequential
 import pathlib
 
+def create_model(img_height, img_width, num_classes):
+        model = Sequential([
+            layers.Rescaling(1. / 255, input_shape=(img_height, img_width, 3)),
+            layers.Conv2D(16, 3, padding='same', activation='relu'),
+            layers.MaxPooling2D(),
+            layers.Conv2D(32, 3, padding='same', activation='relu'),
+            layers.MaxPooling2D(),
+            layers.Conv2D(64, 3, padding='same', activation='relu'),
+            layers.MaxPooling2D(),
+            layers.Flatten(),
+            layers.Dense(128, activation='relu'),
+            layers.Dense(num_classes)
+        ])
+        return model
+    
+def train_and_save_model(img_height, img_width, num_classes, epochs, train_ds, val_ds, optimizer):
+        model = create_model(img_height, img_width, num_classes)
+        model.compile(optimizer=optimizer,loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),metrics=['accuracy'])
+        history = model.fit(train_ds, validation_data=val_ds, epochs=epochs)
+        model.save("config_results")
+        model.summary()
+        return model, history
+
 if __name__ == '__main__':
     dataset_url = "https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz"
     data_dir = tf.keras.utils.get_file('flower_photos', origin=dataset_url, untar=True)
@@ -47,33 +70,7 @@ if __name__ == '__main__':
     num_classes = 5
     epochs = 10
     optimizers = ['rmsprop', 'sgd', 'adadelta', 'adagrad', 'adam', 'adamax', 'ftrl', 'nadam']
-    def create_model(img_height, img_width, num_classes):
-        model = Sequential([
-            layers.Rescaling(1. / 255, input_shape=(img_height, img_width, 3)),
-            layers.Conv2D(16, 3, padding='same', activation='relu'),
-            layers.MaxPooling2D(),
-            layers.Conv2D(32, 3, padding='same', activation='relu'),
-            layers.MaxPooling2D(),
-            layers.Conv2D(64, 3, padding='same', activation='relu'),
-            layers.MaxPooling2D(),
-            layers.Flatten(),
-            layers.Dense(128, activation='relu'),
-            layers.Dense(num_classes)
-        ])
-        """
-        model.compile(optimizer='adam',
-                      loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                      metrics=['accuracy'])
-        """
-        return model
-    def train_and_save_model(img_height, img_width, num_classes, epochs, train_ds, val_ds, optimizer):
-        model = create_model(img_height, img_width, num_classes)
-        model.compile(optimizer=optimizer,loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),metrics=['accuracy'])
-        history = model.fit(train_ds, validation_data=val_ds, epochs=epochs)
-        model.save("config_results")
-        model.summary()
-        return model, history
-
+    
     for optimizer in optimizers:
         model, history = train_and_save_model(img_height, img_width, num_classes, epochs, train_ds, val_ds, optimizer)
         # Saving the model's parameters and training history to a file
