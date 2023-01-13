@@ -45,7 +45,7 @@ def training_loop(opt):
         epochs=epochs
     )
 
-    model.save('model'+ str(iter))
+    model.save('model'+ str(nazwa))
 
 
 
@@ -56,29 +56,15 @@ def training_loop(opt):
     loss = history.history['loss']
     val_loss = history.history['val_loss']
 
-    epochs_range = range(epochs)
-
-    plt.figure(figsize=(8, 8))
-    plt.subplot(1, 2, 1)
-    plt.plot(epochs_range, acc, label='Training Accuracy')
-    plt.plot(epochs_range, val_acc, label='Validation Accuracy')
-    plt.legend(loc='lower right')
-    plt.title('Training and Validation Accuracy')
-
-    plt.subplot(1, 2, 2)
-    plt.plot(epochs_range, loss, label='Training Loss')
-    plt.plot(epochs_range, val_loss, label='Validation Loss')
-    plt.legend(loc='upper right')
-    plt.title('Training and Validation Loss')
-    plt.show()
+    
 
     # Save accuracy values to a file
-    np.savetxt("model"+ str(iter)+"/acc.txt", acc, delimiter=",", fmt='%.2f')
-    np.savetxt("model"+ str(iter)+"/val_acc.txt", val_acc, delimiter=",", fmt='%.2f')
+    np.savetxt("model"+ str(nazwa)+"/acc.txt", acc, delimiter=",", fmt='%.2f')
+    np.savetxt("model"+ str(nazwa)+"/val_acc.txt", val_acc, delimiter=",", fmt='%.2f')
 
     # Save loss values to a file
-    np.savetxt("model"+ str(iter)+"/loss.txt", loss, delimiter=",", fmt='%.2f')
-    np.savetxt("model"+ str(iter)+"/val_loss.txt", val_loss, delimiter=",", fmt='%.2f')
+    np.savetxt("model"+ str(nazwa)+"/loss.txt", loss, delimiter=",", fmt='%.2f')
+    np.savetxt("model"+ str(nazwa)+"/val_loss.txt", val_loss, delimiter=",", fmt='%.2f')
 
 if __name__ == '__main__':
     dataset_url = "https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz"
@@ -117,8 +103,8 @@ if __name__ == '__main__':
     num_classes = len(class_names)
 
     optimizers = ['rmsprop', 'sgd', 'adadelta', 'adagrad', 'adam', 'adamax', 'ftrl', 'nadam']
-    iter = 1
+    nazwa = 1
     for i in range(10):
         for j in optimizers:
             training_loop(j)
-            iter += 1
+            nazwa += 1
