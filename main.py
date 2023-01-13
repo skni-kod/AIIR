@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
+import json
 
 from keras import layers
 from keras import Sequential
@@ -39,50 +40,45 @@ if __name__ == '__main__':
     normalized_ds = train_ds.map(lambda x, y: (normalization_layer(x), y))
     image_batch, labels_batch = next(iter(normalized_ds))
 
-    num_classes = len(class_names)
+    #model creation
 
-    #  Here data preparation has ended
-    #model z najwyzszym dotad accuracy z dropoutem
-    """"
-    model = Sequential([
-        layers.Rescaling(1. / 255, input_shape=(img_height, img_width, 3)),
-        layers.Conv2D(16, 3, padding='same', activation='relu'),
-        layers.MaxPooling2D(),
-        layers.Conv2D(32, 3, padding='same', activation='relu'),
-        layers.MaxPooling2D(),
-        layers.Conv2D(64, 3, padding='same', activation='relu'),
-        layers.MaxPooling2D(),
-        layers.Dropout(.2, input_shape=(2,)),
-        layers.Flatten(),
-        layers.Dense(128, activation='relu'),
-        layers.Dense(num_classes)
-    ])
-    """
-    model = Sequential([
-        layers.Rescaling(1. / 255, input_shape=(img_height, img_width, 3)),
-        layers.Conv2D(16, 3, padding='same', activation='relu'),
-        layers.MaxPooling2D(),
-        layers.Conv2D(32, 3, padding='same', activation='relu'),
-        layers.MaxPooling2D(),
-        layers.Conv2D(64, 3, padding='same', activation='relu'),
-        layers.MaxPooling2D(),
-        layers.Flatten(),
-        layers.Dense(128, activation='relu'),
-        layers.Dense(num_classes)
-    ])
-
-    model.compile(optimizer='adam',
-                  loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                  metrics=['accuracy'])
-
-    model.summary()
-
+    img_height = 180
+    img_width = 180
+    num_classes = 5
     epochs = 10
-    history = model.fit(
-        train_ds,
-        validation_data=val_ds,
-        epochs=epochs
-    )
+    optimizers = ['rmsprop', 'sgd', 'adadelta', 'adagrad', 'adam', 'adamax', 'ftrl', 'nadam']
+    def create_model(img_height, img_width, num_classes):
+        model = Sequential([
+            layers.Rescaling(1. / 255, input_shape=(img_height, img_width, 3)),
+            layers.Conv2D(16, 3, padding='same', activation='relu'),
+            layers.MaxPooling2D(),
+            layers.Conv2D(32, 3, padding='same', activation='relu'),
+            layers.MaxPooling2D(),
+            layers.Conv2D(64, 3, padding='same', activation='relu'),
+            layers.MaxPooling2D(),
+            layers.Flatten(),
+            layers.Dense(128, activation='relu'),
+            layers.Dense(num_classes)
+        ])
+        """
+        model.compile(optimizer='adam',
+                      loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                      metrics=['accuracy'])
+        """
+        return model
+    def train_and_save_model(img_height, img_width, num_classes, epochs, train_ds, val_ds, optimizer):
+        model = create_model(img_height, img_width, num_classes)
+        model.compile(optimizer=optimizer,loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),metrics=['accuracy'])
+        history = model.fit(train_ds, validation_data=val_ds, epochs=epochs)
+        model.save("config_results")
+        model.summary()
+        return model, history
+
+    for optimizer in optimizers:
+        model, history = train_and_save_model(img_height, img_width, num_classes, epochs, train_ds, val_ds, optimizer)
+        # Saving the model's parameters and training history to a file
+        with open(f'models/{optimizer}.txt', 'a') as f:
+            json.dump({'params': model.get_config(), 'history': history.history}, f)
 
     #  Here model creation has ended
 
