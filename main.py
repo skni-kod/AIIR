@@ -111,7 +111,7 @@ if __name__ == '__main__':
 
     train_ds, val_ds, test_ds = split_data(data, 0.7, 0.2, 0.1)
 
-    # wyciągnięcie jednego elementu ze zbioru train
+    ## wyciągnięcie jednego elementu ze zbioru train
     train_one_example = train_ds.take(1)
 
     # stworzenie nowego zbioru danych z jednym elementem
