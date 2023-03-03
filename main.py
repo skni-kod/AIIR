@@ -61,7 +61,6 @@ def prepare(ds, shuffle=False, rot=False, rgb=False, brightness=False, saturatio
             .batch(batch_size)
             .prefetch(AUTOTUNE)
         )
-
     if brightness:
         ds = (
             ds.map(random_brightness, num_parallel_calls=AUTOTUNE)
@@ -70,11 +69,13 @@ def prepare(ds, shuffle=False, rot=False, rgb=False, brightness=False, saturatio
         )
 
     if rgb:
+        print("Error here")
         ds = (
             ds.map(rgb_to_gray_scale, num_parallel_calls=AUTOTUNE)
             .batch(batch_size)
             .prefetch(AUTOTUNE)
         )
+        print("Error fixed")
 
     if rot:
         ds = (
@@ -95,7 +96,7 @@ def prepare(ds, shuffle=False, rot=False, rgb=False, brightness=False, saturatio
 
 if __name__ == '__main__':
 
-    path = "C:/Users/Lenovo/Downloads/flower_photos.tgz"
+    path = "flower_photos.tgz"
     data_dir = tf.keras.utils.get_file('flower_photos', origin=path, untar=True)
     data_dir = pathlib.Path(data_dir)
 
@@ -115,13 +116,17 @@ if __name__ == '__main__':
     train_one_example = train_ds.take(1)
 
     # stworzenie nowego zbioru danych z jednym elementem
+    # TODO (Mystyk): this line is unnecessary. Prepare() function works with train_one_example dataset, so error can simply be avoided. Remove it
     one_example_dataset = tf.data.Dataset.from_tensors(train_one_example)
 
     AUTOTUNE = tf.data.AUTOTUNE
 
-    ds = prepare(one_example_dataset, shuffle=False, rot=False, rgb=True, brightness=False, saturation=False, hue=False)
+    # TODO (Mystyk): This operation should be performed on the entire dataset, before splitting it into three subsets.
+    ds = prepare(train_one_example, shuffle=False, rot=False, rgb=True, brightness=False, saturation=False, hue=False)
 
-    class_names = train_ds.class_names
+    # TODO (Mystyk): here train, val and test datasets should be created from new dataset achieved after data augmentation
+
+    class_names = data.class_names
     train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
     val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
