@@ -1,7 +1,6 @@
 from tensorflow.keras.models import load_model
 from tensorflow.keras.applications.resnet50 import preprocess_input, decode_predictions
 from tensorflow.keras.preprocessing import image
-# additional libs (might change later)
 import numpy as np
 import matplotlib.pyplot as plt
 
