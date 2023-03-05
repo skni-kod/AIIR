@@ -136,5 +136,5 @@ if __name__ == '__main__':
                         epochs=epochs
                     )
 
-                    model.save('model ' + str(counter))
+                    model.save('model ' + str(counter)+'.h5')
                     counter += 1
