@@ -1,3 +1,5 @@
+import os
+
 import tensorflow as tf
 from model import *
 import pathlib
@@ -62,6 +64,8 @@ if __name__ == '__main__':
                         epochs=epochs
                     )
 
-                    model.save('model ' + str(counter) + '.h5')
+                    if not os.path.exists('models/'):
+                        os.makedirs('models')
+                    model.save('models/model ' + str(counter) + '.h5')
                     print(f"Progress: {counter}/{total}")
                     counter += 1
