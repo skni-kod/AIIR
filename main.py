@@ -1,9 +1,21 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
-
+import json
 from keras import layers
-from keras import Sequential
+import keras_tuner as kt
 import pathlib
+from hyperModel import create_HyperModel
+
+
+def train_and_save_model(img_height, img_width, num_classes, epochs, train_ds, val_ds, optimizer):
+    model = create_HyperModel(img_height, img_width, num_classes)  # tu nalezy wymienic model
+    model.compile(optimizer=optimizer, loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                  metrics=['accuracy'])
+    history = model.fit(train_ds, validation_data=val_ds, epochs=epochs)
+    model.save("config_results")
+    model.summary()
+    return model, history
+
 
 if __name__ == '__main__':
     dataset_url = "https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz"
@@ -39,35 +51,47 @@ if __name__ == '__main__':
     normalized_ds = train_ds.map(lambda x, y: (normalization_layer(x), y))
     image_batch, labels_batch = next(iter(normalized_ds))
 
-    num_classes = len(class_names)
+    # model creation
 
-    #  Here data preparation has ended
-
-    model = Sequential([
-        layers.Rescaling(1. / 255, input_shape=(img_height, img_width, 3)),
-        layers.Conv2D(16, 3, padding='same', activation='relu'),
-        layers.MaxPooling2D(),
-        layers.Conv2D(32, 3, padding='same', activation='relu'),
-        layers.MaxPooling2D(),
-        layers.Conv2D(64, 3, padding='same', activation='relu'),
-        layers.MaxPooling2D(),
-        layers.Flatten(),
-        layers.Dense(128, activation='relu'),
-        layers.Dense(num_classes)
-    ])
-
-    model.compile(optimizer='adam',
-                  loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                  metrics=['accuracy'])
-
-    model.summary()
-
+    img_height = 180
+    img_width = 180
+    num_classes = 5
     epochs = 10
-    history = model.fit(
-        train_ds,
-        validation_data=val_ds,
-        epochs=epochs
-    )
+
+    model, history = train_and_save_model(img_height, img_width, num_classes, epochs, train_ds, val_ds,
+                                          optimizer='adam')
+    tuner = kt.Hyperband(create_HyperModel,
+                         objective='val_accuracy',
+                         max_epochs=epochs,
+                         factor=3,
+                         directory='auto_trening',
+                         project_name='aiir')
+
+    stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
+
+    tuner.search(train_ds, epochs=50, validation_data=val_ds, callbacks=[stop_early])
+
+    # Get the optimal hyperparameters
+    best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
+
+    # Build the model with the optimal hyperparameters and train it on the data for 50 epochs
+    model = tuner.hypermodel.build(best_hps)
+    history = model.fit(train_ds, epochs=50, validation_data=val_ds)
+
+    val_acc_per_epoch = history.history['val_accuracy']
+    best_epoch = val_acc_per_epoch.index(max(val_acc_per_epoch)) + 1
+    print('Best epoch: %d' % (best_epoch,))
+
+    hypermodel = tuner.hypermodel.build(best_hps)
+
+    # Retrain the model
+    hypermodel.fit(train_ds, epochs=best_epoch, validation_data=val_ds)
+
+    eval_result = hypermodel.evaluate(val_ds)
+    print("[test loss, test accuracy]:", eval_result)
+
+    with open(f'models/hyper_model - {epochs}.txt', 'a') as f:
+        json.dump({'params': model.get_config(), 'history': history.history}, f)
 
     #  Here model creation has ended
 
