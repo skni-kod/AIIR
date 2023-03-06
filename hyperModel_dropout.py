@@ -26,7 +26,7 @@ def create_HyperModel(img_height, img_width, num_classes):
     hyperModel.add(keras.layers.Dropout(0.2))
     hyperModel.add(keras.layers.Dense(units=hp_units3, activation='relu'))
     hyperModel.add(keras.layers.Dropout(0.2))
-    hyperModel.add(keras.layers.Dense(units=num_classes)) #bo 5 roznych kwaitow to 5 roznych neuronów
+    hyperModel.add(keras.layers.Dense(units=num_classes))  # bo 5 roznych kwaitow to 5 roznych neuronów
 
     hp_learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])
 

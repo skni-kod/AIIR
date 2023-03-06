@@ -8,12 +8,14 @@ from hyperModel import create_HyperModel
 
 
 def train_and_save_model(img_height, img_width, num_classes, epochs, train_ds, val_ds, optimizer):
-    model = create_HyperModel(img_height, img_width, num_classes) #tu nalezy wymienic model
-    model.compile(optimizer=optimizer,loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),metrics=['accuracy'])
+    model = create_HyperModel(img_height, img_width, num_classes)  # tu nalezy wymienic model
+    model.compile(optimizer=optimizer, loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                  metrics=['accuracy'])
     history = model.fit(train_ds, validation_data=val_ds, epochs=epochs)
     model.save("config_results")
     model.summary()
     return model, history
+
 
 if __name__ == '__main__':
     dataset_url = "https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz"
@@ -49,20 +51,21 @@ if __name__ == '__main__':
     normalized_ds = train_ds.map(lambda x, y: (normalization_layer(x), y))
     image_batch, labels_batch = next(iter(normalized_ds))
 
-    #model creation
+    # model creation
 
     img_height = 180
     img_width = 180
     num_classes = 5
     epochs = 10
 
-    model, history = train_and_save_model(img_height, img_width, num_classes, epochs, train_ds, val_ds, optimizer='adam')
+    model, history = train_and_save_model(img_height, img_width, num_classes, epochs, train_ds, val_ds,
+                                          optimizer='adam')
     tuner = kt.Hyperband(create_HyperModel,
-                     objective='val_accuracy',
-                     max_epochs=epochs,
-                     factor=3,
-                     directory='auto_trening',
-                     project_name='aiir')
+                         objective='val_accuracy',
+                         max_epochs=epochs,
+                         factor=3,
+                         directory='auto_trening',
+                         project_name='aiir')
 
     stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
 
@@ -113,5 +116,3 @@ if __name__ == '__main__':
     plt.legend(loc='upper right')
     plt.title('Training and Validation Loss')
     plt.show()
-
-
