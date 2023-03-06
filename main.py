@@ -1,13 +1,7 @@
 import tensorflow as tf
-import random
-import numpy as np
 import matplotlib.pyplot as plt
-from PIL import Image
-import PIL
-
 from keras import layers
 from keras import Sequential
-import pathlib
 
 
 def split_data(data_set, train_percent, val_percent, test_percent):
@@ -96,15 +90,40 @@ def prepare(ds, shuffle=False, rot=False, rgb=False, brightness=False, saturatio
     return ds.prefetch(buffer_size=AUTOTUNE)
 
 
-if __name__ == '__main__':
-    path = "C:/Users/Lenovo/Downloads/flower_photos.tgz"
-    data_dir = tf.keras.utils.get_file('flower_photos', origin=path,
-                                       untar=True)  # if we have dataset in folders, we delete this whole line
-    data_dir = pathlib.Path(data_dir)
+def prepare_layers(ds, rot=False, bright=False, flip=False):
+    """
+    Function augments given dataset using Sequential model layers
+    :param ds: dataset to be augmented
+    :param rot: determines whether to apply random rotation
+    :param bright: determines whether to apply random brightness
+    :param flip: determines whether to appli random flips
+    :return: augmented dataset
+    """
+    if rot:
+        random_rot = tf.keras.Sequential([
+            layers.RandomRotation(0.2),
+        ])
+        ds = ds.map(lambda x, y: (random_rot(x), y), num_parallel_calls=AUTOTUNE)
+    if bright:
+        random_bright = tf.keras.layers.RandomBrightness(factor=0.2)
+        ds = ds.map(lambda x, y: (random_bright(x), y), num_parallel_calls=AUTOTUNE)
+    if flip:
+        random_flip = tf.keras.Sequential([
+            layers.RandomFlip("horizontal_and_vertical"),
+        ])
+        ds = ds.map(lambda x, y: (random_flip(x), y), num_parallel_calls=AUTOTUNE)
 
-    batch_size = 32
-    img_height = 180
-    img_width = 180
+    return ds.prefetch(buffer_size=AUTOTUNE)
+
+
+if __name__ == '__main__':
+    path = "datasets/gestures_dataset"  # Remember to recreate or change the path to the actual dataset
+    data_dir = path
+
+    batch_size = 32  # Original was 32
+    # (Mystyk) Image size might be different, just a guess based on webcam repo
+    img_height = 300
+    img_width = 300
 
     data = tf.keras.utils.image_dataset_from_directory(
         data_dir,
@@ -114,9 +133,10 @@ if __name__ == '__main__':
 
     AUTOTUNE = tf.data.AUTOTUNE
 
-    augumented_ds = prepare(data, shuffle=False, rot=True, rgb=True, brightness=False, saturation=True, hue=False)
+    # augumented_ds = prepare(data, shuffle=False, rot=True , rgb=True, brightness=False, saturation=True, hue=False)
+    augmented_ds = prepare_layers(data, rot=True, bright=True, flip=True)
 
-    train_ds, val_ds, test_ds = split_data(0.7, 0.2, 0.1)
+    train_ds, val_ds, test_ds = split_data(augmented_ds, 0.7, 0.2, 0.1)
 
     class_names = data.class_names
 
