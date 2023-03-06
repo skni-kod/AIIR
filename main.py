@@ -8,6 +8,7 @@ from hyperModel import create_HyperModel
 from keras import layers
 from keras import Sequential
 
+
 def split_data(data_set, train_percent, val_percent, test_percent):
     data_set = data_set.shuffle(buffer_size=len(data_set), reshuffle_each_iteration=False)
 
@@ -134,7 +135,7 @@ if __name__ == '__main__':
     path = "datasets/gestures_dataset"  # Remember to recreate or change the path to the actual dataset
     data_dir = path
 
-    batch_s
+    batch_size = 32
     # (Mystyk) Image size might be different, just a guess based on webcam repo
     img_height = 300
     img_width = 300
