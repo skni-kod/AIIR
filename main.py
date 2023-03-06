@@ -3,7 +3,7 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
-
+import PIL
 
 from keras import layers
 from keras import Sequential
@@ -11,16 +11,15 @@ import pathlib
 
 
 def split_data(data_set, train_percent, val_percent, test_percent):
-
     data_set = data_set.shuffle(buffer_size=len(data_set), reshuffle_each_iteration=False)
 
-    train_size = int(len(data_set)*train_percent)
-    val_size = int(len(data_set)*val_percent)
-    test_size = int(len(data_set)*test_percent)
+    train_size = int(len(data_set) * train_percent)
+    val_size = int(len(data_set) * val_percent)
+    test_size = int(len(data_set) * test_percent)
 
     train_ds = data_set.take(train_size)
     val_ds = data_set.skip(train_size).take(val_size)
-    test_ds = data_set.skip(train_size+val_size).take(test_size)
+    test_ds = data_set.skip(train_size + val_size).take(test_size)
 
     return train_ds, val_ds, test_ds
 
@@ -51,53 +50,56 @@ def rgb_to_gray_scale(image, label):
 
 
 def prepare(ds, shuffle=False, rot=False, rgb=False, brightness=False, saturation=False, hue=False):
-
     if shuffle:
         ds = ds.shuffle(1000)
 
     if saturation:
-        ds = (
+        ds_saturation = (
             ds.map(random_saturation, num_parallel_calls=AUTOTUNE)
             .batch(batch_size)
             .prefetch(AUTOTUNE)
         )
+        ds = ds.concatenate(ds_saturation)
+
     if brightness:
-        ds = (
+        ds_brightness = (
             ds.map(random_brightness, num_parallel_calls=AUTOTUNE)
             .batch(batch_size)
             .prefetch(AUTOTUNE)
         )
+        ds = ds.concatenate(ds_brightness)
 
     if rgb:
-        print("Error here")
-        ds = (
+        ds_gray = (
             ds.map(rgb_to_gray_scale, num_parallel_calls=AUTOTUNE)
             .batch(batch_size)
             .prefetch(AUTOTUNE)
         )
-        print("Error fixed")
+        ds = ds.concatenate(ds_gray)
 
     if rot:
-        ds = (
+        ds_rot = (
             ds.map(image_rot_on_dataset, num_parallel_calls=AUTOTUNE)
             .batch(batch_size)
             .prefetch(AUTOTUNE)
         )
+        ds = ds.concatenate(ds_rot)
 
     if hue:
-        ds = (
+        ds_hue = (
             ds.map(random_hue, num_parallel_calls=AUTOTUNE)
             .batch(batch_size)
             .prefetch(AUTOTUNE)
         )
+        ds = ds.concatenate(ds_hue)
 
     return ds.prefetch(buffer_size=AUTOTUNE)
 
 
 if __name__ == '__main__':
-
-    path = "flower_photos.tgz"
-    data_dir = tf.keras.utils.get_file('flower_photos', origin=path, untar=True)
+    path = "C:/Users/Lenovo/Downloads/flower_photos.tgz"
+    data_dir = tf.keras.utils.get_file('flower_photos', origin=path,
+                                       untar=True)  # if we have dataset in folders, we delete this whole line
     data_dir = pathlib.Path(data_dir)
 
     batch_size = 32
@@ -110,23 +112,14 @@ if __name__ == '__main__':
         batch_size=batch_size,
         image_size=(img_height, img_width))
 
-    train_ds, val_ds, test_ds = split_data(data, 0.7, 0.2, 0.1)
-
-    # wyciągnięcie jednego elementu ze zbioru train
-    train_one_example = train_ds.take(1)
-
-    # stworzenie nowego zbioru danych z jednym elementem
-    # TODO (Mystyk): this line is unnecessary. Prepare() function works with train_one_example dataset, so error can simply be avoided. Remove it
-    one_example_dataset = tf.data.Dataset.from_tensors(train_one_example)
-
     AUTOTUNE = tf.data.AUTOTUNE
 
-    # TODO (Mystyk): This operation should be performed on the entire dataset, before splitting it into three subsets.
-    ds = prepare(train_one_example, shuffle=False, rot=False, rgb=True, brightness=False, saturation=False, hue=False)
+    augumented_ds = prepare(data, shuffle=False, rot=True, rgb=True, brightness=False, saturation=True, hue=False)
 
-    # TODO (Mystyk): here train, val and test datasets should be created from new dataset achieved after data augmentation
+    train_ds, val_ds, test_ds = split_data(0.7, 0.2, 0.1)
 
     class_names = data.class_names
+
     train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
     val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
