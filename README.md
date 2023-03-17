@@ -1,5 +1,5 @@
 # AIIR
-Artificial Intelligence Image Regocnition (AIIR) is a Python project that aims to develop CNN model that can be used for image recognition. It was divided into two parts. 
+Artificial Intelligence Image Recognition (AIIR) is a Python project that aims to develop CNN model that can be used for image recognition. It was divided into two parts. 
 
 The first one aiming to expand it's participants knowledge about applications and usage of Artificial Intelligence in modern programming challanges, and to train them in using such solutions in actual real life problems. In this part two different datasets are used, to develop optimal data preparation techniques, find best network models and evaluate their results.
 
