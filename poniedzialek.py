@@ -20,7 +20,7 @@ def split_data(data_set, train_percent, val_percent, test_percent):
 
 def prepare_using_layers(ds, directory_name="augmented_dataset", rot=False, bright=False, flip=False):
     """
-    Function augments given dataset using Sequential model layers
+    Function creates an augmented dataset from a given dataset using Sequential model layers
     :param directory_name: name of a directory where augmented images will be saved
     :param ds: dataset to be augmented
     :param rot: determines whether to apply random rotation
@@ -34,7 +34,7 @@ def prepare_using_layers(ds, directory_name="augmented_dataset", rot=False, brig
     img_width = batch.shape[2]
 
     if not os.path.exists('datasets/' + directory_name):
-        os.makedirs(directory_name)
+        os.makedirs('datasets/' + directory_name)
     labels = ds.class_names
     for label in labels:
         if not os.path.exists(f'datasets/{directory_name}/{label}'):
