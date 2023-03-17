@@ -95,13 +95,13 @@ def prepare(ds, shuffle=False, rot=False, rgb=False, brightness=False, saturatio
     return ds.prefetch(buffer_size=AUTOTUNE)
 
 
-def prepare_layers(ds, rot=False, bright=False, flip=False):
+def prepare_using_layers(ds, rot=False, bright=False, flip=False):
     """
     Function augments given dataset using Sequential model layers
     :param ds: dataset to be augmented
     :param rot: determines whether to apply random rotation
     :param bright: determines whether to apply random brightness
-    :param flip: determines whether to appli random flips
+    :param flip: determines whether to apply random flips
     :return: augmented dataset
     """
     if rot:
@@ -149,7 +149,7 @@ if __name__ == '__main__':
     AUTOTUNE = tf.data.AUTOTUNE
 
     # augumented_ds = prepare(data, shuffle=False, rot=True , rgb=True, brightness=False, saturation=True, hue=False)
-    augmented_ds = prepare_layers(data, rot=True, bright=True, flip=True)
+    augmented_ds = prepare_using_layers(data, rot=True, bright=True, flip=True)
 
     train_ds, val_ds, test_ds = split_data(augmented_ds, 0.7, 0.2, 0.1)
 
