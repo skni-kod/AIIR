@@ -122,40 +122,41 @@ if __name__ == '__main__':
 
     functions = [create_model1, create_model2, create_model3, create_model4, create_model5]
     filters = [8, 16, 32]
-    pool_size = [2, 4, 8]
     dense_units = [32, 64, 128, 256]
     counter = 1
-    total = len(filters) * len(pool_size) * len(dense_units) * len(functions)
+    total = len(filters) * len(dense_units) * len(functions)
     eval_results = dict()
     #%%
     for filter in filters:
-        for pool in pool_size:
-            for units in dense_units:
-                for function in functions:
-                    model = function(img_height, img_width, num_classes, filter, pool, units)
-                    model.compile(optimizer='Adam',
-                                  loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                                  metrics=['accuracy'])
-
-                    model.summary()
-                    history = model.fit(
-                        train_ds,
-                        validation_data=val_ds,
-                        epochs=epochs
-                    )
-
-                    evaluation = model.evaluate(test_ds)
-                    eval_results[f'model_{counter}'] = {"train_accuracy": history.history['accuracy'][-1],
-                                                         "val_accuracy": history.history['val_accuracy'][-1],
-                                                         "test_loss": evaluation[0], "test_accuracy": evaluation[1]}
-
-                    if not os.path.exists('models/'):
-                        os.makedirs('models')
-                    model.save('models/model_' + str(counter))
-                    with open('models/results.json', 'w') as out_file:
-                        json.dump(eval_results, out_file)
-                    print(f"Progress: {counter}/{total}")
+        for units in dense_units:
+            for function in functions:
+                if counter < 24:
                     counter += 1
+                    continue
+                model = function(img_height, img_width, num_classes, filter, 2, units)
+                model.compile(optimizer='Adam',
+                              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                              metrics=['accuracy'])
+
+                model.summary()
+                history = model.fit(
+                    train_ds,
+                    validation_data=val_ds,
+                    epochs=epochs
+                )
+
+                evaluation = model.evaluate(test_ds)
+                eval_results[f'model_{counter}'] = {"train_accuracy": history.history['accuracy'][-1],
+                                                     "val_accuracy": history.history['val_accuracy'][-1],
+                                                     "test_loss": evaluation[0], "test_accuracy": evaluation[1]}
+
+                if not os.path.exists('models/'):
+                    os.makedirs('models')
+                model.save('models/model_' + str(counter))
+                with open('models/results.json', 'w') as out_file:
+                    json.dump(eval_results, out_file)
+                print(f"Progress: {counter}/{total}")
+                counter += 1
 
     with open('models/results.json', 'w') as out_file:
         json.dump(eval_results, out_file)
