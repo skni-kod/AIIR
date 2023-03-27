@@ -28,3 +28,4 @@ if __name__ == '__main__':
 
     model = keras.models.load_model('training_results/model_45')
     print(model.layers)
+    keras.models.save_model(model, 'training_results/model_45_light', save_format="h5")
