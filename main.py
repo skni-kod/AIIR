@@ -154,7 +154,6 @@ if __name__ == '__main__':
                     json.dump(eval_results, out_file)
                 print(f"Progress: {counter}/{total}")
                 counter += 1
-                exit(0)
 
     with open('models/results.json', 'w') as out_file:
         json.dump(eval_results, out_file)
