@@ -81,10 +81,12 @@ def prepare_using_layers(ds, directory_name="augmented_dataset", rot=False, brig
     return data
 
 
+
 #%%
 if __name__ == '__main__':
     path = "datasets/improved_gestures_dataset"  # Remember to recreate or change the path to the actual dataset
     data_dir = path
+
 
     batch_size = 32
     # (Mystyk) Image size might be different, just a guess based on webcam repo
@@ -157,3 +159,4 @@ if __name__ == '__main__':
 
     with open('models/results.json', 'w') as out_file:
         json.dump(eval_results, out_file)
+
